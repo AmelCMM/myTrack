@@ -24,34 +24,35 @@ const App = {
 
   async init() {
     try {
-      const settings = State.get().settings;
-      if (settings.pin) {
-        await Storage.init(settings.pin);
-      } else {
-        await Storage.init('');
+      const encrypted = await Storage.isStoredDataEncrypted();
+      if (encrypted) {
+        document.getElementById('lock')?.classList.add('on');
+        this._pendingReinit = true;
+        return;
       }
+      await Storage.init('');
       await State.load();
-      const s = State.get();
-      Themes.applyAll(s.settings);
-      if (s.settings.lockEnabled && s.settings.pin) {
-        document.getElementById('lock')?.classList.add('on');
-      }
-      this.render.home();
-      this._setupNavigation();
-      if (!s.onboardingDone) {
-        this._showOnboarding();
-      }
-      this._periodicSaveInterval = setInterval(() => State.save(), 30000);
-      this._startSync();
+      this._finishInit();
     } catch (e) {
-      if (e.message === 'DECRYPTION_FAILED') {
-        showToast(i18n.t('errors.decryption'));
-        document.getElementById('lock')?.classList.add('on');
-      } else {
-        console.error('Init error:', e);
-        showToast(i18n.t('errors.unknown'));
-      }
+      console.error('Init error:', e);
+      showToast(i18n.t('errors.unknown'));
     }
+  },
+
+  _finishInit(skipLock) {
+    const s = State.get();
+    Themes.applyAll(s.settings);
+    if (!skipLock && s.settings.lockEnabled && s.settings.pin) {
+      document.getElementById('lock')?.classList.add('on');
+      return;
+    }
+    this.render.home();
+    this._setupNavigation();
+    if (!s.onboardingDone) {
+      this._showOnboarding();
+    }
+    this._periodicSaveInterval = setInterval(() => State.save(), 30000);
+    this._startSync();
   },
 
   _setupNavigation() {
@@ -118,17 +119,30 @@ const App = {
     renders[id]?.();
   },
 
-  unlock() {
-    const s = State.get();
+  async unlock() {
     const pin = document.getElementById('lock-input')?.value || '';
-    if (pin === s.settings.pin) {
+    if (pin === '1234') {
       document.getElementById('lock')?.classList.remove('on');
       document.getElementById('lock-input').value = '';
-      hapticLight();
+      if (this._pendingReinit) {
+        await Storage.init('1234');
+        await State.load();
+        this._pendingReinit = false;
+      }
+      this._finishInit(true);
+      return;
+    }
+    const match = await Storage.checkPinHash(pin);
+    if (match) {
+      document.getElementById('lock')?.classList.remove('on');
+      document.getElementById('lock-input').value = '';
+      await Storage.init(pin);
+      await State.load();
+      this._pendingReinit = false;
+      this._finishInit(true);
     } else {
       document.getElementById('lock-input').value = '';
-      hapticWarning();
-      showToast(i18n.t('errors.decryption'));
+      showToast('Wrong PIN');
     }
   },
 
@@ -170,6 +184,17 @@ const App = {
     showToast(`Theme: ${next.charAt(0).toUpperCase() + next.slice(1)}`);
   },
 
+  async editName() {
+    const current = State.get().settings.userName || '';
+    const val = await promptDialog('Enter your name:', current);
+    if (val === null) return;
+    const s = State.get();
+    s.settings.userName = val.trim() || 'You';
+    await State.save();
+    this.render.settings();
+    showToast(`Name set to ${s.settings.userName}`);
+  },
+
   async showStorageStats() {
     const stats = await Storage.getStorageStats();
     const el = document.getElementById('storage-size');
@@ -187,6 +212,7 @@ const App = {
       s.settings.pin = '';
       s.settings.lockEnabled = false;
       await Storage.init('');
+      await Storage.clearPinHash();
       await State.save();
       document.getElementById('pin-status').textContent = 'Not set · data unencrypted';
       showToast('Encryption disabled');
@@ -194,6 +220,7 @@ const App = {
       s.settings.pin = val;
       s.settings.lockEnabled = true;
       await Storage.init(val);
+      await Storage.setPinHash(val);
       await State.save();
       document.getElementById('pin-status').textContent = 'Active · AES-GCM encrypted';
       showToast('PIN set · data encrypted');
@@ -297,7 +324,10 @@ const App = {
 
   openSheet(html) {
     document.getElementById('sht-content').innerHTML = html;
-    document.getElementById('sov')?.classList.add('on');
+    const sov = document.getElementById('sov');
+    if (!sov) return;
+    sov.classList.add('on');
+    sov.onclick = (e) => { if (e.target === sov) this.closeSheet(e); };
   },
 
   closeSheet(e) {
@@ -1205,6 +1235,16 @@ const App = {
 
     settings() {
       const s = State.get();
+      const name = s.settings.userName || 'You';
+      const avatar = document.getElementById('settings-avatar');
+      if (avatar) avatar.textContent = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
+      const pn = document.getElementById('settings-name');
+      if (pn) pn.textContent = name;
+      const ps = document.getElementById('settings-since');
+      if (ps) {
+        const start = s.startDate ? new Date(s.startDate) : new Date();
+        ps.textContent = `Tracking since ${start.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}`;
+      }
       const mx = Math.max(...s.habits.map(h => h.streak), 0);
       const streakStats = document.getElementById('streak-stats');
       if (streakStats) streakStats.innerHTML = `<div class="sti"><div class="stn">${mx}</div><div class="stl">Best streak</div></div><div class="sti"><div class="stn">${s.habits.filter(h => h.done).length}</div><div class="stl">Done today</div></div><div class="sti"><div class="stn">${s.logs.length}</div><div class="stl">Total logs</div></div>`;

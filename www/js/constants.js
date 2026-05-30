@@ -7,6 +7,7 @@ export const APP_GITHUB = 'https://github.com/AmelCMM';
 
 export const STORAGE_KEY = 'mt_state_v3';
 export const SALT_KEY = '__mt_salt__';
+export const PIN_HASH_KEY = '__mt_pin_hash__';
 export const MAX_LOGS = 1000;
 export const MAX_BLE_READINGS = 500;
 export const MAX_BALANCE_HISTORY = 730;
@@ -134,7 +135,7 @@ export const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'A
 
 export const EMPTY_STATE = () => ({
   settings: {
-    accentIdx: 0, lightMode: false, pin: '', lockEnabled: false,
+    userName: '', accentIdx: 0, lightMode: false, pin: '', lockEnabled: false,
     notifications: false, notificationTime: '08:00', biometrics: false,
     themeVariant: 'default', blockScreenshots: false,
     domainToggles: { health: true, study: true, work: true, mood: true, finance: true },
@@ -155,6 +156,7 @@ export const EMPTY_STATE = () => ({
   exercise: [],
   nutrition: { date: '', meals: [], calories: 0, goal: DEFAULT_CALORIE_GOAL },
   steps: { date: '', count: 0, goal: DEFAULT_STEPS_GOAL },
+  startDate: today(),
   goals: [],
   challenges: [],
   achievements: [],

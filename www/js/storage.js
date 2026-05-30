@@ -1,4 +1,4 @@
-import { STORAGE_KEY, SALT_KEY } from './constants.js';
+import { STORAGE_KEY, SALT_KEY, PIN_HASH_KEY } from './constants.js';
 
 const Storage = (() => {
   let _cryptoKey = null;
@@ -280,6 +280,34 @@ const Storage = (() => {
     }
   }
 
+  async function isStoredDataEncrypted() {
+    const raw = await rawGet(STORAGE_KEY);
+    if (!raw) return false;
+    try { JSON.parse(raw); return false; } catch { return true; }
+  }
+
+  async function setPinHash(pin) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(pin);
+    const hash = await crypto.subtle.digest('SHA-256', data);
+    const hex = buf2hex(hash);
+    await rawSet(PIN_HASH_KEY, hex);
+  }
+
+  async function checkPinHash(pin) {
+    const stored = await rawGet(PIN_HASH_KEY);
+    if (!stored) return false;
+    const encoder = new TextEncoder();
+    const data = encoder.encode(pin);
+    const hash = await crypto.subtle.digest('SHA-256', data);
+    const hex = buf2hex(hash);
+    return hex === stored;
+  }
+
+  async function clearPinHash() {
+    await rawRemove(PIN_HASH_KEY);
+  }
+
   return {
     init, save, load, remove, clear,
     exportJSON, importJSON,
@@ -289,6 +317,7 @@ const Storage = (() => {
     isNative: () => isNative(),
     isEncrypted: () => !!_cryptoKey,
     getPin: () => _pin,
+    isStoredDataEncrypted, setPinHash, checkPinHash, clearPinHash,
   };
 })();
 

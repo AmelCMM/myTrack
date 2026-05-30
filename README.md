@@ -4,6 +4,8 @@
 
 This is an app I personally vibe coded for personal use. Built with Capacitor, vanilla JS, and a lot of caffeine. No frameworks, no backend, no data leaves your device.
 
+[![Build](https://github.com/AmelCMM/myTrack/actions/workflows/build.yml/badge.svg)](https://github.com/AmelCMM/myTrack/actions/workflows/build.yml)
+
 ## Features
 
 - **Habits** — daily habit tracking with streaks
@@ -65,6 +67,19 @@ Or open in Android Studio for a one-click build:
 ```bash
 npx cap open android
 ```
+
+## Release Signing
+
+For release builds, set these repository secrets in GitHub:
+
+| Secret | Value |
+|--------|-------|
+| `ANDROID_KEYSTORE_PATH` | Path to your `.jks` keystore in the repo |
+| `ANDROID_KEYSTORE_PASSWORD` | Keystore password |
+| `ANDROID_KEY_ALIAS` | Key alias |
+| `ANDROID_KEY_PASSWORD` | Key password |
+
+The debug APK is built automatically on every push. Release APKs are built on pushes to `main` when secrets are configured.
 
 ## Development
 

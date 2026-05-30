@@ -50,7 +50,6 @@ jobs:
     name: Build Release APK
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    needs: android
     steps:
       - uses: actions/checkout@v4
 
@@ -73,20 +72,48 @@ jobs:
       - name: Sync web assets
         run: npx cap copy android
 
+      - name: Decode keystore (if provided via secret)
+        if: ${{ secrets.KEYSTORE_BASE64 != '' && secrets.KEYSTORE_BASE64 != '' }}
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > "$GITHUB_WORKSPACE/release.keystore"
+
+      - name: Generate keystore & inject signing config
+        run: |
+          KEYSTORE="$GITHUB_WORKSPACE/release.keystore"
+          if [ ! -f "$KEYSTORE" ]; then
+            keytool -genkey -v \
+              -keystore "$KEYSTORE" \
+              -alias release \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -storepass android -keypass android \
+              -dname "CN=myTrack, OU=Dev, O=NeuraLumina, L=Unknown, ST=Unknown, C=US" \
+              -noprompt
+          fi
+
+          sed -i "/buildTypes {/i\\
+          signingConfigs {\\
+              release {\\
+                  storeFile file('$KEYSTORE')\\
+                  storePassword 'android'\\
+                  keyAlias 'release'\\
+                  keyPassword 'android'\\
+              }\\
+          }\\
+          " android/app/build.gradle
+
+          sed -i "/minifyEnabled false/a\\
+                  signingConfig signingConfigs.release\\
+          " android/app/build.gradle
+
       - name: Build release APK
         run: |
           cd android
           chmod +x gradlew
           ./gradlew assembleRelease
-        env:
-          ANDROID_KEYSTORE_PATH: ${{ secrets.ANDROID_KEYSTORE_PATH }}
-          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
       - name: Upload release APK
         uses: actions/upload-artifact@v4
         with:
           name: myTrack-release
           path: android/app/build/outputs/apk/release/app-release.apk
-          if-no-files-found: warn
+          if-no-files-found: error

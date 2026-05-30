@@ -68,18 +68,28 @@ Or open in Android Studio for a one-click build:
 npx cap open android
 ```
 
-## Release Signing
+## CI Builds
 
-For release builds, set these repository secrets in GitHub:
+On every push to `main`:
+- **Debug APK** is built and uploaded as `myTrack-debug` artifact
+- **Release APK** is built (auto-signed with a generated keystore) and uploaded as `myTrack-release` artifact
+
+### Using Your Own Keystore
+
+For Play Store releases, base64-encode your keystore and add it as a repo secret:
+
+```bash
+base64 -w0 my-release.keystore | pbcopy  # macOS
+base64 -w0 my-release.keystore | xclip    # Linux
+```
+
+Then set this secret in **Settings → Secrets and variables → Actions**:
 
 | Secret | Value |
 |--------|-------|
-| `ANDROID_KEYSTORE_PATH` | Path to your `.jks` keystore in the repo |
-| `ANDROID_KEYSTORE_PASSWORD` | Keystore password |
-| `ANDROID_KEY_ALIAS` | Key alias |
-| `ANDROID_KEY_PASSWORD` | Key password |
+| `KEYSTORE_BASE64` | base64-encoded `.jks` keystore file |
 
-The debug APK is built automatically on every push. Release APKs are built on pushes to `main` when secrets are configured.
+The CI will decode it automatically and sign with your keystore instead of the auto-generated one.
 
 ## Development
 

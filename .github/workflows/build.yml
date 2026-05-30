@@ -50,6 +50,8 @@ jobs:
     name: Build Release APK
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    env:
+      KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
     steps:
       - uses: actions/checkout@v4
 
@@ -73,9 +75,9 @@ jobs:
         run: npx cap copy android
 
       - name: Decode keystore (if provided via secret)
-        if: ${{ secrets.KEYSTORE_BASE64 != '' && secrets.KEYSTORE_BASE64 != '' }}
+        if: env.KEYSTORE_BASE64 != ''
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > "$GITHUB_WORKSPACE/release.keystore"
+          echo "$KEYSTORE_BASE64" | base64 -d > "$GITHUB_WORKSPACE/release.keystore"
 
       - name: Generate keystore & inject signing config
         run: |

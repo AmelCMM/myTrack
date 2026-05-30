@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="theme-color" content="#000000"/>
+  <meta name="description" content="myTrack - All-in-one personal tracking dashboard. Habits, mood, health, finance, and more. 100% offline, encrypted on-device."/>
+  <meta name="apple-mobile-web-app-title" content="myTrack"/>
+  <meta name="application-name" content="myTrack"/>
+  <meta name="msapplication-TileColor" content="#000000"/>
+  <link rel="manifest" href="manifest.json"/>
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23000'/><text x='50' y='68' text-anchor='middle' font-size='55' fill='%2300e5a0'>M</text></svg>"/>
+  <title>myTrack</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/main.css"/>
+</head>
+<body>
+  <div id="app">
+    <div id="lock">
+      <div style="font-size:32px">🔐</div>
+      <h2>myTrack</h2>
+      <input type="password" id="lock-input" placeholder="PIN" maxlength="4" inputmode="numeric"/>
+      <button class="lock-btn" id="lock-unlock-btn" onclick="App.unlock()">Unlock</button>
+      <p style="font-size:11px;color:var(--tm)">Demo PIN: 1234</p>
+    </div>
+
+    <div class="scr on" id="scr-home">
+      <div class="sb-pad"></div>
+      <div class="scroll" id="home-scroll">
+        <div class="shdr">
+          <h1>myTrack</h1>
+          <p id="greet"></p>
+        </div>
+        <div class="pulse-sec">
+          <div class="pr-wrap">
+            <svg viewBox="0 0 160 160"><circle class="pr-bg" cx="80" cy="80" r="65"/><circle class="pr-fill" id="pring" cx="80" cy="80" r="65"/></svg>
+            <div class="pr-center"><span class="pr-score" id="pscore">--</span><span class="pr-lbl">balance</span></div>
+          </div>
+          <p class="pr-meta" id="pverdict">Computing your rhythm&#8230;</p>
+        </div>
+        <div class="orbs" id="home-orbs"></div>
+        <div class="srow" id="home-stats"></div>
+        <div class="card"><div class="ch"><span class="ct">Water</span><span class="ca" id="water-goal-btn" onclick="App.sheets.water()">Set goal</span></div><div class="wtk" id="wglasses"></div></div>
+        <div class="card" id="habits-card"><div class="ch"><span class="ct">Habits</span><span class="ca" id="add-habit-btn" onclick="App.sheets.habit()">+ Add</span></div><div class="hgrid" id="hgrid"></div></div>
+        <div class="card"><div class="ch"><span class="ct">Today</span><span class="ca" id="timeline-nav-btn" onclick="App.nav('timeline')">All &rarr;</span></div><div class="llist" id="recent-logs"></div></div>
+        <div class="card" id="streak-summary-card"><div class="ch"><span class="ct">Streaks</span></div><div class="srow" id="home-streaks"></div></div>
+        <div style="display:flex;justify-content:center;padding:6px 0 10px"><div class="priv"><div class="pdot"></div>All data stored locally &middot; AES-GCM encrypted</div></div>
+        <div class="footer"><p>Built by <strong>Neura Lumina</strong> &middot; <a href="https://github.com/AmelCMM" target="_blank">@AmelCMM</a></p></div>
+      </div>
+    </div>
+
+    <div class="scr" id="scr-timeline">
+      <div class="sb-pad"></div>
+      <div class="shdr"><h1>Timeline</h1><p id="tl-date"></p></div>
+      <div class="sbar">
+        <svg viewBox="0 0 24 24" width="14" height="14"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="tl-search" placeholder="Search logs&#8230;"/>
+      </div>
+      <div id="tl-filters" style="display:flex;gap:6px;padding:0 16px 8px;overflow-x:auto;flex-shrink:0"></div>
+      <div class="scroll" id="tl-container"></div>
+    </div>
+
+    <div class="scr" id="scr-insights">
+      <div class="sb-pad"></div>
+      <div class="shdr"><h1>Insights</h1><p>7-day view &middot; processed locally</p></div>
+      <div class="scroll" id="insights-scroll">
+        <div class="card"><div class="ch"><span class="ct">Balance Score</span><div class="ptag">7 days</div></div><div class="cwrap" id="bal-chart"></div></div>
+        <div class="card"><div class="ch"><span class="ct">Activity Heatmap</span><span style="font-size:10px;color:var(--tm)">6 months</span></div><div class="hmmon" id="hm-months"></div><div id="hm-grid"></div></div>
+        <div class="card"><div class="ch"><span class="ct">Correlations</span></div><div id="corr-panel"></div></div>
+        <div class="card" id="insights-summary-card"><div class="ch"><span class="ct">Summary</span></div><div id="insights-summary"></div></div>
+        <div class="card" id="insights-habits-card"><div class="ch"><span class="ct">Habit Breakdown</span></div><div id="habit-breakdown"></div></div>
+        <div class="card" id="insights-weekly-card"><div class="ch"><span class="ct">Weekly Comparison</span></div><div id="weekly-compare"></div></div>
+        <div class="card"><div class="ch"><span class="ct">Life Atlas</span><span class="ptag">Native plugin</span></div><div id="globe-wrap"></div></div>
+        <div class="footer" style="padding:6px 0 12px"><p>Built by <strong>Neura Lumina</strong> &middot; <a href="https://github.com/AmelCMM" target="_blank">@AmelCMM</a></p></div>
+      </div>
+    </div>
+
+    <div class="scr" id="scr-journal">
+      <div class="sb-pad"></div>
+      <div class="shdr"><h1>Journal</h1><p>Private &middot; encrypted on-device</p></div>
+      <div class="sbar">
+        <svg viewBox="0 0 24 24" width="14" height="14"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="journal-search" placeholder="Search entries&#8230;"/>
+      </div>
+      <div id="journal-filters" style="display:flex;gap:6px;padding:0 16px 8px;overflow-x:auto;flex-shrink:0"></div>
+      <div class="scroll" id="jlist"></div>
+    </div>
+
+    <div class="scr" id="scr-settings">
+      <div class="sb-pad"></div>
+      <div class="scroll" id="settings-scroll">
+        <div class="ph"><div class="av" id="settings-avatar">AM</div><div class="pn" id="settings-name">Amel</div><div class="ps" id="settings-since">Tracking since Jan 2026</div></div>
+        <div class="stcard" id="streak-stats"></div>
+        <div class="sg"><div class="sgt">Appearance</div>
+          <div class="sit" id="accent-cycle-btn" onclick="App.cycleAccent()"><div class="sil"><div class="si-ic" style="background:var(--adim);color:var(--accent)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20"/></svg></div><div><div class="silb">Accent colour</div><div class="sisb" id="acc-name">Emerald</div></div></div><div class="sir"><div id="acc-prev" style="width:18px;height:18px;border-radius:50%;background:var(--accent)"></div><svg class="chev" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div></div>
+          <div class="sit" id="light-toggle-btn" onclick="App.toggleLight()"><div class="sil"><div class="si-ic" style="background:rgba(255,255,255,.05);color:var(--ts)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></div><div><div class="silb">Light mode</div><div class="sisb" id="lm-lbl">Off</div></div></div><div class="sir"><div class="tog" id="lm-tog"></div></div></div>
+          <div class="sit" id="theme-variant-btn" onclick="App.cycleThemeVariant()"><div class="sil"><div class="si-ic" style="background:rgba(0,229,160,.1);color:var(--accent)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 0 0 20"/></svg></div><div><div class="silb">Theme variant</div><div class="sisb" id="theme-variant-name">Default</div></div></div><div class="sir"><svg class="chev" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div></div>
+        </div>
+        <div class="sg"><div class="sgt">Bluetooth Sensors</div>
+          <div class="sit" id="ble-toggle-btn" onclick="App.ble.toggle()"><div class="sil"><div class="si-ic" style="background:rgba(77,159,255,.1);color:#4d9fff"><svg viewBox="0 0 24 24"><polyline points="6.5 6.5 17.5 17.5"/><polyline points="17.5 6.5 12 12 17.5 17.5"/><polyline points="6.5 17.5 12 12"/></svg></div><div><div class="silb">BLE Heart Rate</div><div class="sisb" id="ble-status">Not connected</div></div></div><div class="sir"><div class="ble-badge"><div class="ble-dot" id="ble-dot"></div><span id="ble-bpm">--</span> bpm</div></div></div>
+        </div>
+        <div class="sg"><div class="sgt">Features</div>
+          <div class="sit" id="goals-nav-btn" onclick="App.nav('goals')"><div class="sil"><div class="si-ic" style="background:rgba(0,229,160,.1);color:var(--accent)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div><div><div class="silb">Goals</div><div class="sisb" id="goals-count">0 active</div></div></div><div class="sir"><svg class="chev" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div></div>
+          <div class="sit" id="challenges-nav-btn" onclick="App.nav('challenges')"><div class="sil"><div class="si-ic" style="background:rgba(245,166,35,.1);color:var(--warn)"><svg viewBox="0 0 24 24"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5C7 4 7 7 7 7"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5C17 4 17 7 17 7"/><path d="M4 22h16"/><path d="M10 22V2h4v20"/></svg></div><div><div class="silb">Challenges</div><div class="sisb" id="challenges-count">0 active</div></div></div><div class="sir"><svg class="chev" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div></div>
+          <div class="sit" id="achievements-nav-btn" onclick="App.nav('achievements')"><div class="sil"><div class="si-ic" style="background:rgba(170,100,255,.1);color:var(--purple)"><svg viewBox="0 0 24 24"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5C7 4 7 7 7 7"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5C17 4 17 7 17 7"/><path d="M4 22h16"/><path d="M10 22V2h4v20"/></svg></div><div><div class="silb">Achievements</div><div class="sisb" id="ach-count">0 unlocked</div></div></div><div class="sir"><svg class="chev" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div></div>
+        </div>
+        <div class="sg"><div class="sgt">Focus &amp; Productivity</div>
+          <div class="sit"><div class="sil"><div class="si-ic" style="background:rgba(77,159,255,.1);color:var(--info)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div><div class="silb">Total focus time</div><div class="sisb" id="total-focus-time">0 hours</div></div></div><div class="sir"><span class="siv" id="focus-sessions-count">0 sessions</span></div></div>
+        </div>
+        <div class="sg"><div class="sgt">Privacy &amp; Data</div>
+          <div class="sit" id="set-pin-btn" onclick="App.setPin()"><div class="sil"><div class="si-ic" style="background:rgba(0,229,160,.1);color:var(--accent)"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div><div><div class="silb">Encryption PIN</div><div class="sisb" id="pin-status">Not set &middot; data unencrypted</div></div></div><div class="sir"><svg class="chev" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div></div>
+          <div class="sit" id="export-btn" onclick="App.exportData()"><div class="sil"><div class="si-ic" style="background:rgba(255,255,255,.05);color:var(--ts)"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div><div><div class="silb">Export backup</div><div class="sisb">JSON &middot; all domains</div></div></div><div class="sir"><svg class="chev" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div></div>
+          <div class="sit" id="import-btn" onclick="App.importData()"><div class="sil"><div class="si-ic" style="background:rgba(255,255,255,.05);color:var(--ts)"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 5 17 10"/><line x1="12" y1="5" x2="12" y2="19"/></svg></div><div><div class="silb">Import backup</div></div></div><div class="sir"><svg class="chev" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div></div>
+          <div class="sit" id="clear-data-btn" onclick="App.clearData()"><div class="sil"><div class="si-ic" style="background:rgba(255,77,106,.1);color:var(--danger)"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></div><div><div class="silb">Clear all data</div><div class="sisb" style="color:var(--danger)">Irreversible</div></div></div></div>
+        </div>
+        <div class="sg"><div class="sgt">About</div>
+          <div class="sit"><div class="sil"><div class="si-ic" style="background:rgba(255,255,255,.05);color:var(--ts)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div class="silb" id="app-version">myTrack v2.0.0</div></div><div class="sir"><span class="siv">Sovran OS</span></div></div>
+          <div class="sit" id="github-link" onclick="App.openGithub()"><div class="sil"><div class="si-ic" style="background:rgba(255,255,255,.05);color:var(--ts)"><svg viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg></div><div><div class="silb">GitHub</div><div class="sisb">@AmelCMM</div></div></div><div class="sir"><svg class="chev" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div></div>
+          <div class="sit" id="storage-stats-btn" onclick="App.showStorageStats()"><div class="sil"><div class="si-ic" style="background:rgba(255,255,255,.05);color:var(--ts)"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></div><div><div class="silb">Storage stats</div><div class="sisb" id="storage-size">Calculating&#8230;</div></div></div><div class="sir"><span class="siv" id="storage-enc-status"></span></div></div>
+        </div>
+        <div class="footer" style="padding:4px 0 16px"><p>Built by <strong>Neura Lumina</strong> &middot; <a href="https://github.com/AmelCMM" target="_blank">@AmelCMM</a></p></div>
+      </div>
+    </div>
+
+    <div class="scr" id="scr-health">
+      <div class="sb-pad"></div>
+      <div class="shdr"><h1>Health</h1><p>Vitals &middot; Symptoms &middot; Medications &middot; More</p></div>
+      <div class="scroll" id="health-scroll">
+        <div class="card" id="sleep-card"><div class="ch"><span class="ct">Sleep</span><span class="ca" id="log-sleep-btn" onclick="App.sheets.sleep()">+ Log</span></div><div id="sleep-display"></div></div>
+        <div class="card" id="steps-card"><div class="ch"><span class="ct">Steps</span><span class="ca" id="set-steps-btn" onclick="App.sheets.steps ? App.sheets.steps() : App.sheets.quickLog()">Set</span></div><div id="steps-display"></div></div>
+        <div class="card" id="exercise-card"><div class="ch"><span class="ct">Exercise</span><span class="ca" id="log-exercise-btn" onclick="App.sheets.exercise()">+ Log</span></div><div id="exercise-list"></div></div>
+        <div class="card"><div class="ch"><span class="ct">Vitals</span><span class="ca" id="add-vital-btn" onclick="App.sheets.vital()">+ Log</span></div><div class="dr" id="vitals-list"></div></div>
+        <div class="card"><div class="ch"><span class="ct">Symptoms</span><span class="ca" id="add-symptom-btn" onclick="App.sheets.symptom()">+ Add</span></div><div class="dr" id="symptoms-list"></div></div>
+        <div class="card"><div class="ch"><span class="ct">Medications</span><span class="ca" id="add-med-btn" onclick="App.sheets.medication()">+ Add</span></div><div class="dr" id="meds-list"></div></div>
+        <div class="card" id="nutrition-card"><div class="ch"><span class="ct">Nutrition</span><span class="ca" id="log-meal-btn" onclick="App.sheets.meal()">+ Log Meal</span></div><div id="nutrition-display"></div></div>
+        <div class="footer" style="padding:6px 0 12px"><p>Built by <strong>Neura Lumina</strong> &middot; <a href="https://github.com/AmelCMM" target="_blank">@AmelCMM</a></p></div>
+      </div>
+    </div>
+
+    <div class="scr" id="scr-study">
+      <div class="sb-pad"></div>
+      <div class="shdr"><h1>Study</h1><p>Courses &middot; Assignments &middot; Focus</p></div>
+      <div class="scroll" id="study-scroll">
+        <div class="card"><div class="ch"><span class="ct">Courses</span><span class="ca" id="add-course-btn" onclick="App.sheets.course()">+ Add</span></div><div class="dr" id="courses-list"></div></div>
+        <div class="card"><div class="ch"><span class="ct">Assignments</span><span class="ca" id="add-assign-btn" onclick="App.sheets.assignment()">+ Add</span></div><div class="dr" id="assigns-list"></div></div>
+        <div class="card"><div class="ch"><span class="ct">Focus Timer</span><span class="ca" id="focus-25-btn" onclick="App.startPomodoro(25)">25 min</span></div>
+          <div style="display:flex;align-items:center;gap:10px;padding-top:4px">
+            <span style="font-family:var(--mono);font-size:26px;color:var(--tp)" id="study-timer">25:00</span>
+            <button class="tbtn" id="focus-start-btn" onclick="App.timer.toggle()">Start</button>
+            <button class="tbtn" id="focus-50-btn" onclick="App.startPomodoro(50)">50 min</button>
+            <input type="number" id="focus-custom" placeholder="min" style="width:50px;background:var(--s2);border:.5px solid var(--bmd);border-radius:var(--rsm);padding:6px 8px;font-size:12px;color:var(--tp);outline:none;font-family:var(--font)"/>
+          </div>
+          <div id="focus-today" style="font-size:11px;color:var(--tm);margin-top:6px"></div>
+        </div>
+        <div class="footer" style="padding:6px 0 12px"><p>Built by <strong>Neura Lumina</strong> &middot; <a href="https://github.com/AmelCMM" target="_blank">@AmelCMM</a></p></div>
+      </div>
+    </div>
+
+    <div class="scr" id="scr-projects">
+      <div class="sb-pad"></div>
+      <div class="shdr"><h1>Projects</h1><p>Tasks &amp; work tracking</p></div>
+      <div class="scroll" id="proj-scroll">
+        <div class="card"><div class="ch"><span class="ct">Quick task</span></div>
+          <div style="display:flex;gap:8px"><input type="text" id="quick-task-input" placeholder="Add task and press Enter&#8230;" style="flex:1;background:var(--s2);border:.5px solid var(--bmd);border-radius:var(--rsm);padding:9px 12px;font-size:13px;color:var(--tp);outline:none;font-family:var(--font)"/><button class="tbtn" onclick="App._quickTask()">Add</button></div>
+        </div>
+        <div class="card"><div class="ch"><span class="ct">Projects</span><span class="ca" id="add-project-btn" onclick="App.sheets.project()">+ New</span></div><div class="dr" id="proj-list"></div></div>
+        <div class="card"><div class="ch"><span class="ct">Tasks</span><span class="ca" id="add-task-btn" onclick="App.sheets.task()">+ Add</span></div><div class="dr" id="tasks-list"></div></div>
+        <div class="footer" style="padding:6px 0 12px"><p>Built by <strong>Neura Lumina</strong> &middot; <a href="https://github.com/AmelCMM" target="_blank">@AmelCMM</a></p></div>
+      </div>
+    </div>
+
+    <div class="scr" id="scr-mood">
+      <div class="sb-pad"></div>
+      <div class="shdr"><h1>Mood &amp; Mind</h1><p>Mental fitness log</p></div>
+      <div class="scroll" id="mood-scroll">
+        <div class="card"><div class="ch"><span class="ct">How are you?</span><span class="ca" id="mood-saved" style="color:var(--tm)"></span></div><div class="mgrid" id="mood-picker"></div></div>
+        <div class="card"><div class="ch"><span class="ct">Gratitude</span><span class="ca" id="add-grat-btn" onclick="App.sheets.gratitude()">+ Add</span></div><div class="dr" id="grat-list"></div></div>
+        <div class="card" id="mood-trend-card"><div class="ch"><span class="ct">Mood trend</span></div><div id="mood-trend"></div></div>
+        <div class="card" id="mood-stats-card"><div class="ch"><span class="ct">Mood statistics</span></div><div id="mood-stats"></div></div>
+        <div class="card" id="meditation-card"><div class="ch"><span class="ct">Meditation</span></div>
+          <div style="display:flex;gap:8px;padding-top:4px">
+            <button class="tbtn" id="med-5-btn" onclick="App.sheets.meditationLog(5)">5 min</button>
+            <button class="tbtn" id="med-10-btn" onclick="App.sheets.meditationLog(10)">10 min</button>
+            <button class="tbtn" id="med-15-btn" onclick="App.sheets.meditationLog(15)">15 min</button>
+          </div>
+          <div id="meditation-stats" style="font-size:11px;color:var(--tm);margin-top:6px"></div>
+        </div>
+        <div class="footer" style="padding:6px 0 12px"><p>Built by <strong>Neura Lumina</strong> &middot; <a href="https://github.com/AmelCMM" target="_blank">@AmelCMM</a></p></div>
+      </div>
+    </div>
+
+    <div class="scr" id="scr-finance">
+      <div class="sb-pad"></div>
+      <div class="shdr"><h1>Finance</h1><p>Offline ledger &middot; all local</p></div>
+      <div class="scroll" id="fin-scroll">
+        <div id="fin-quick-stats" style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;padding:0 16px 8px"></div>
+        <div class="card"><div class="ch"><span class="ct">Accounts</span><span class="ca" id="add-account-btn" onclick="App.sheets.account()">+ Add</span></div><div id="acnt-list"></div></div>
+        <div class="card"><div class="ch"><span class="ct">Transactions</span><span class="ca" id="add-tx-btn" onclick="App.sheets.transaction()">+ Add</span></div>
+          <div id="tx-filters" style="display:flex;gap:6px;margin-bottom:8px"></div>
+          <div class="dr" id="tx-list"></div>
+        </div>
+        <div class="card" id="monthly-summary-card"><div class="ch"><span class="ct">Monthly Summary</span></div><div id="monthly-summary"></div></div>
+        <div class="card" id="budget-card"><div class="ch"><span class="ct">Budgets</span><span class="ca" id="add-budget-btn" onclick="App.sheets.budget()">+ Add</span></div><div id="budget-list"></div></div>
+        <div class="card" id="spending-card"><div class="ch"><span class="ct">Spending by Category</span></div><div id="spending-cats"></div></div>
+        <div class="footer" style="padding:6px 0 12px"><p>Built by <strong>Neura Lumina</strong> &middot; <a href="https://github.com/AmelCMM" target="_blank">@AmelCMM</a></p></div>
+      </div>
+    </div>
+
+    <div class="scr" id="scr-goals">
+      <div class="sb-pad"></div>
+      <div class="shdr"><h1>Goals</h1><p>Track what matters</p></div>
+      <div class="scroll" id="goals-scroll">
+        <div id="goals-content"></div>
+        <div class="footer" style="padding:6px 0 12px"><p>Built by <strong>Neura Lumina</strong> &middot; <a href="https://github.com/AmelCMM" target="_blank">@AmelCMM</a></p></div>
+      </div>
+    </div>
+
+    <div class="scr" id="scr-challenges">
+      <div class="sb-pad"></div>
+      <div class="shdr"><h1>Challenges</h1><p>Push your limits</p></div>
+      <div class="scroll" id="challenges-scroll">
+        <div id="challenges-content"></div>
+        <div class="footer" style="padding:6px 0 12px"><p>Built by <strong>Neura Lumina</strong> &middot; <a href="https://github.com/AmelCMM" target="_blank">@AmelCMM</a></p></div>
+      </div>
+    </div>
+
+    <div class="scr" id="scr-achievements">
+      <div class="sb-pad"></div>
+      <div class="shdr"><h1>Achievements</h1><p id="ach-subtitle">Gamified progress tracking</p></div>
+      <div class="scroll" id="ach-scroll">
+        <div id="ach-content"></div>
+        <div class="footer" style="padding:6px 0 12px"><p>Built by <strong>Neura Lumina</strong> &middot; <a href="https://github.com/AmelCMM" target="_blank">@AmelCMM</a></p></div>
+      </div>
+    </div>
+
+    <nav id="bnav">
+      <div class="ni on" id="nav-home"><div class="ni-ic"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><span class="ni-lb">Home</span></div>
+      <div class="ni" id="nav-timeline"><div class="ni-ic"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div><span class="ni-lb">Timeline</span></div>
+      <div class="ni" id="nav-insights"><div class="ni-ic"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><span class="ni-lb">Insights</span></div>
+      <div class="ni" id="nav-journal"><div class="ni-ic"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div><span class="ni-lb">Journal</span></div>
+      <div class="ni" id="nav-settings"><div class="ni-ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div><span class="ni-lb">Settings</span></div>
+    </nav>
+
+    <div class="fab" id="fab-btn" onclick="App.sheets.quickLog()"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+
+    <div class="sov" id="sov"><div class="sht" id="sht"><div class="shdl"></div><div id="sht-content"></div></div></div>
+
+    <div class="tov" id="tov">
+      <div style="text-align:center">
+        <div style="font-size:13px;color:var(--tm);margin-bottom:6px;letter-spacing:1px;text-transform:uppercase" id="tsess">Focus Session</div>
+        <div class="tdisp" id="tdisp">25:00</div>
+        <div class="tsub" id="tsub">Ready</div>
+        <div>
+          <button class="tbtn" id="timer-toggle-btn" onclick="App.timer.toggle()">Start</button>
+          <button class="tbtn" id="timer-close-btn" onclick="App.timer.stop();document.getElementById('tov').classList.remove('on')">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(() => {});
+      });
+    }
+  </script>
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>
